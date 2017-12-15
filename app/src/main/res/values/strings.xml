@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">TestApp_2</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">设置</string>
+    <string name="nav_pet">我的宠物</string>
+    <string name="nav_gallery">成就中心</string>
+    <string name="nav_club">社区动态</string>
+    <string name="nav_manage">工具</string>
+    <string name="nav_share">分享</string>
+    <string name="nav_communicate">分享我的动态</string>
+    <string name="text_nav_name">共享单车测试</string>
+    <string name="text_nav_intro">简介：无</string>
+    <string name="text_0_1">此处应有地图定位</string>
+    <string name="button_0_1">扫码开锁</string>
+    <string name="title_activity_second">骑行页面</string>
+    <string name="image_1_1">woniu</string>
+    <string name="text_1_2">2</string>
+    <string name="animate_1">眨眼</string>
+    <string name="button_2_1">说话（录音）</string>
+    <string name="text_2_1">骑行中</string>
+    <string name="button_2_2">骑行结束</string>
+    <string name="text_2_2">骑行时间：00:00:00</string>
+    <string name="title_activity_pet">宠物页面</string>
+    <string name="text_pet_1">我的宠物</string>
+    <string name="text_pet_2">LEVEL：1</string>
+    <string name="button_pet_1">返回</string>
+    <string name="text_pet_3">现在没有什么功能</string>
+    <string name="title_activity_gallery">成就中心</string>
+    <string name="text_gallery_1">总骑行时间：</string>
+    <string name="text_gallery_2">00:00:00</string>
+    <string name="text_gallery_3">骑行次数：</string>
+    <string name="text_gallery_4">0  次</string>
+    <string name="text_gallery_6">0  公里</string>
+    <string name="text_gallery_5">总骑行距离：</string>
+    <string name="button_gallery_1">返回</string>
+    <string name="text_gallery_7">简陋文字版</string>
+</resources>
