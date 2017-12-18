@@ -39,6 +39,7 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.model.LatLngBounds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,39 @@ import java.util.List;
 public class SecondActivity extends AppCompatActivity
 implements View.OnClickListener,DialogInterface.OnClickListener
 {
+    //坐标常数
+    //紫荆公寓
+    private Position Zijing;
+    private static LatLng northeast_Zijing=new LatLng(40.0178480000,116.3367140000);
+    private static LatLng southwest_Zijing=new LatLng(40.0173780000,116.3356450000);
+    //六教
+    private Position Liujiao;
+    private static LatLng northeast_Liujiao=new LatLng(40.0093000000,116.3372260000);
+    private static LatLng southwest_Liujiao=new LatLng(40.0079180000,116.3356140000);
+    //主楼
+    private Position Zhulou;
+    private static LatLng northeast_Zhulou=new LatLng(40.0080670000,116.3407430000);
+    private static LatLng southwest_Zhulou=new LatLng(40.0067200000,116.3373790000);
+    //主楼前
+    private Position Zhulouqian;
+    private static LatLng northeast_Zhulouqian=new LatLng(40.0069510000,116.3403070000);
+    private static LatLng southwest_Zhulouqian=new LatLng(40.0059530000,116.3383760000);
+    //建馆报告厅
+    private Position Jianguanbaogaoting;
+    private static LatLng northeast_Jianguanbaogaoting=new LatLng(40.0058320000,116.3411250000);
+    private static LatLng southwest_Jianguanbaogaoting=new LatLng(40.0053350000,116.3404740000);
+    //建管
+    private Position Jianguan;
+    private static LatLng northeast_Jianguan=new LatLng(40.0056420000,116.3402890000);
+    private static LatLng southwest_Jianguan=new LatLng(40.0049230000,116.3391130000);
+    //艺术博物馆
+    private Position Yibo;
+    private static LatLng northeast_Yibo=new LatLng(40.0079870000,116.3425220000);
+    private static LatLng southwest_Yibo=new LatLng(40.0069720000,116.3410040000);
+    //美院
+    private Position Meiyuan;
+    private static LatLng northeast_Meiyuan=new LatLng(40.0063980000,116.3434200000);
+    private static LatLng southwest_Meiyuan=new LatLng(40.0048060000,116.3415200000);
 
     //定义ViewPage滑动效果
     private View view1,view2;
@@ -56,6 +90,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
     private Button button1;
     private Button button2;
     private boolean listening;
+    private boolean speaking;
     //动画
     private SilkyAnimation silkyAnimation;
     private SurfaceView surfaceView;
@@ -155,6 +190,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
         MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(18.0f);
         mBaiduMap.setMapStatus(msu);
+        iniBounds();
 
         text2=view1.findViewById(R.id.text_2_2);
         button1=view1.findViewById(R.id.button_2_1);
@@ -162,7 +198,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         button2=view1.findViewById(R.id.button_2_2);
         button2.setOnClickListener(this);
         surfaceView=view1.findViewById(R.id.surfaceView1);
-        surfaceView.setOnClickListener(this);
+        //surfaceView.setOnClickListener(this);
         //动画
         silkyAnimation = new SilkyAnimation.Builder(surfaceView)
                 .setCacheCount(8)
@@ -280,6 +316,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                 silkyAnimation.start("listening");
                 button1.setText("停止录音");
                 listening=true;
+                speaking=false;
             }
             else{
                 silkyAnimation.stop();
@@ -296,10 +333,10 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                     .setTitle("骑行结束：").setPositiveButton("返回",this)
                     .show();
         }
-        else if(view.getId()==R.id.surfaceView1){
+        /*else if(view.getId()==R.id.surfaceView1){
             silkyAnimation.stop();
             silkyAnimation.start("speak");
-        }
+        }*/
     }
     Handler handler=new Handler();
     Runnable runnable=new Runnable() {
@@ -392,7 +429,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                     = new MyLocationConfiguration(locationMode, true, null);
             //设置定位图层配置信息，只有先允许定位图层后设置定位图层配置信息才会生效，参见 setMyLocationEnabled(boolean)
             mBaiduMap.setMyLocationConfigeration(configuration);
-            //text1.setText("您当前的位置为：" + bdLocation.getAddrStr());
+
             //判断是否为第一次定位,是的话需要定位到用户当前位置
             if (isFirstIn) {
                 //地理坐标基本数据结构
@@ -404,6 +441,10 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                 isFirstIn = false;
                 Toast.makeText(getApplicationContext(), "扫码成功，骑行开始",Toast.LENGTH_SHORT).show();
             }
+            //这里可以获得位置信息！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+            //text1.setText("您当前的位置为：" + bdLocation.getAddrStr());
+            //检测是否进入某地址范围
+            positionCheck(bdLocation);
         }
     }
     //Android 6.0 以上的版本申请权限的回调方法
@@ -423,6 +464,91 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                 break;
             default:
                 break;
+        }
+    }
+    //存储位置范围坐标
+    public class Position{
+        public int ID;
+        //public LatLng NorthEast;
+        //public LatLng SouthWest;
+        public boolean Trigger;
+        public LatLngBounds Bounds;
+
+        Position(int id,LatLng northEast,LatLng southWest ){
+            this.ID=id;
+            //this.NorthEast=northEast;
+            //this.SouthWest=southWest;
+            this.Trigger=true;
+            this.Bounds=new LatLngBounds.Builder()
+                    .include(northEast)
+                    .include(southWest)
+                    .build();
+        }
+        public boolean isTrigger(LatLng mCurrentLat){
+            if(this.Bounds.contains(mCurrentLat)&&Trigger){
+                Trigger=false;
+                return true;
+            }
+            return false;
+        }
+    }
+    private void iniBounds(){
+        Zijing=new Position(0,northeast_Zijing,southwest_Zijing);
+        Liujiao=new Position(1,northeast_Liujiao,southwest_Liujiao);
+        Zhulou=new Position(2,northeast_Zhulou,southwest_Zhulou);
+        Zhulouqian=new Position(3,northeast_Zhulouqian,southwest_Zhulouqian);
+        Jianguanbaogaoting=new Position(4,northeast_Jianguanbaogaoting,southwest_Jianguanbaogaoting);
+        Jianguan=new Position(5,northeast_Jianguan,southwest_Jianguan);
+        Yibo=new Position(6,northeast_Yibo,southwest_Yibo);
+        Meiyuan=new Position(7,northeast_Meiyuan,southwest_Meiyuan);
+    }
+    private void setSpeaking(){
+        listening=false;
+        speaking=true;
+        silkyAnimation.stop();
+        silkyAnimation.start("speak");
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                silkyAnimation.start("nocommand");
+                listening=false;
+                speaking=false;
+            }
+        },10000);
+    }
+    private void positionCheck(BDLocation bdLocation){
+        if(Zijing.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入紫荆范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Liujiao.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入六教范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Zhulou.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入主楼范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Zhulouqian.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入主楼前范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Jianguanbaogaoting.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入建馆报告厅范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Jianguan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入建馆范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Yibo.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入艺术博物馆范围",Toast.LENGTH_SHORT).show();
+        }
+        else if(Meiyuan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入美院范围",Toast.LENGTH_SHORT).show();
         }
     }
 }
