@@ -6,15 +6,6 @@
     android:background="#ffffff"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/text_2_1"
-        android:layout_width="match_parent"
-        android:layout_height="34dp"
-        android:text="@string/text_2_1"
-        android:textAlignment="center"
-        android:textColor="@android:color/black"
-        android:textSize="24sp" />
-
     <SurfaceView
         android:id="@+id/surfaceView1"
         android:layout_width="match_parent"

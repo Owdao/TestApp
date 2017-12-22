@@ -6,7 +6,10 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.AsyncTask;
+import android.speech.SpeechRecognizer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -41,6 +44,19 @@ import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.model.LatLngBounds;
 
+import com.iflytek.cloud.RecognizerListener;
+import com.iflytek.cloud.RecognizerResult;
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SpeechUtility;
+import com.iflytek.cloud.SynthesizerListener;
+import com.iflytek.cloud.ui.RecognizerDialog;
+import com.iflytek.cloud.ui.RecognizerDialogListener;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +65,26 @@ implements View.OnClickListener,DialogInterface.OnClickListener
 {
     //坐标常数
     //紫荆公寓
+    private String onRide = "第327位使用者，在你之前有253位用户留下了他们的故事，故事就像是旅程中的糖果，不知道在什么地方就" +
+            "能捡到一颗，这样的未知性美丽而迷人，给熟悉的日常里添加不熟悉的色彩。你也可以在旅程中以语音的方式留下一段故事，" +
+            "一起构筑这份献给陌生人的温柔。准备好开始你的旅程了吗";
+    private String inZhuanwan = "上次有人在这里摔了一跤，你可要小心点儿";
+    private String inJianguanBaogaoting = "别看这个地方其貌不扬，很多演讲都是在这里举办的哦，前些日子我刚掉到《白夜追凶》的坑里疯狂补剧，" +
+            "然后......然后主创团队就来清华了！就是在建馆报告厅进行演讲！啊啊啊！我当时可兴奋了，可惜没有学生卡不能领票。";
+    private String inJinaguan = "这是第203位用户留下的故事：10月份的时候，有次我连续三天待在建馆，没日没夜的干活，准备交图。交完图的那个中午" +
+            "我从建馆走出来，本来有些丧丧的，推开门突然发现门口的三颗银杏叶子黄了。温暖的颜色和温暖的阳光一起扑面而来，像是要把人融化一样。虽然" +
+            "也有些“到乡翻似烂柯人”的感触，但还是感觉被治愈了";
+    private String Huifu = "我不干活的时候会在网上看，还可以直接跳广告呢，活在网络世界里可能就这点比较方便吧，哈哈哈哈哈哈哈哈哈";
+    private String inZhulouqian = "这是第187位用户留下的故事，我是国旗仪仗队的一员，最近刚刚退队有些感慨，虽然要早起要晚训，要在黑得像夜里的清晨赶到" +
+            "主楼，但每次看到天际微明时红旗鼓动着上升的那一刻，就觉得之前的一切付出都值得";
+    private String inYibo = "这里是清华大学艺术博物馆，我和你说，这里可高级了，展出过达芬奇的手稿，伦勃朗和莫奈的画，简直就是清华大学艺术爱好者的天堂啊" +
+            "我也好想进去逛逛";
+    private String onEnd = "看来这次行程就要结束了，没关系，我啥都懂点儿还能讲段子，你肯定会忍不住再来找我唠嗑的对不对？下次要找我玩哦，拜拜";
+    private RecognizerDialog mIatD;
+    private RecognizerDialogListener mDListener;
+    private SpeechSynthesizer mTts;
+    private SynthesizerListener mSynListener;
+    private String result; //use for speech result
     private Position Zijing;
     private static LatLng northeast_Zijing=new LatLng(40.0178480000,116.3367140000);
     private static LatLng southwest_Zijing=new LatLng(40.0173780000,116.3356450000);
@@ -125,6 +161,8 @@ implements View.OnClickListener,DialogInterface.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SDKInitializer.initialize(getApplicationContext());
+        SpeechUtility.createUtility(this,SpeechConstant.APPID +"=5a29fbfa");
+
         setContentView(R.layout.activity_second);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -181,10 +219,59 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                 return viewList.get(position);
             }
         };
+        mDListener = new RecognizerDialogListener() {
+            @Override
+            public void onResult(RecognizerResult recognizerResult, boolean b) {
+                if(recognizerResult != null) {
+                    result = parseIatResult(recognizerResult.getResultString());
+                    mIatD.hide();
+                    if (result.indexOf("追剧") != -1){
+                        mTts.startSpeaking(Huifu, mSynListener);
+                    }
+                }
+                else {
+                    //tv.setText("声音太小了~");
+                }
+            }
 
+            @Override
+            public void onError(SpeechError speechError) {
+
+            }
+        };
+        mSynListener = new SynthesizerListener() {
+            //会话结束回调接口，没有错误时，error为null
+            public void onCompleted(SpeechError error) {
+            }
+            //缓冲进度回调
+            //percent为缓冲进度0~100，beginPos为缓冲音频在文本中开始位置，endPos表示缓冲音频在文本中结束位置，info为附加信息。
+            public void onBufferProgress(int percent, int beginPos, int endPos, String info) {
+            }
+            //开始播放
+            public void onSpeakBegin() {
+            }
+            //暂停播放
+            public void onSpeakPaused() {
+            }
+            //播放进度回调
+            //percent为播放进度0~100,beginPos为播放音频在文本中开始位置，endPos表示播放音频在文本中结束位置.
+            public void onSpeakProgress(int percent, int beginPos, int endPos) {
+            }
+            //恢复播放回调接口
+            public void onSpeakResumed() {
+            }
+            //会话事件回调接口
+            public void onEvent(int arg0, int arg1, int arg2, Bundle arg3) {
+            }
+        };
         viewPager.setAdapter(pagerAdapter);
-
+        mTts = SpeechSynthesizer.createSynthesizer(this, null);
+        //mIat = SpeechRecognizer.createRecognizer(MainActivity.this, null);
+        mIatD = new RecognizerDialog(this, null);
+        mIatD.setListener(mDListener);
+        setIatParam("listenfile");
         //地图显示
+        mTts.startSpeaking(onRide, mSynListener);
         mMapView = (TextureMapView)view2.findViewById(R.id.mTexturemap_2);
         mBaiduMap = mMapView.getMap();
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
@@ -312,6 +399,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
     public void onClick(View view) {
         if(view.getId()==R.id.button_2_1){
             if(!listening){
+                mIatD.show();
                 silkyAnimation.stop();
                 silkyAnimation.start("listening");
                 button1.setText("停止录音");
@@ -533,22 +621,79 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         else if(Zhulouqian.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入主楼前范围",Toast.LENGTH_SHORT).show();
+            mTts.startSpeaking(inZhulouqian, mSynListener);
         }
         else if(Jianguanbaogaoting.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入建馆报告厅范围",Toast.LENGTH_SHORT).show();
+            mTts.startSpeaking(inJianguanBaogaoting, mSynListener);
         }
         else if(Jianguan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入建馆范围",Toast.LENGTH_SHORT).show();
+            mTts.startSpeaking(inJinaguan, mSynListener);
         }
         else if(Yibo.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入艺术博物馆范围",Toast.LENGTH_SHORT).show();
+            mTts.startSpeaking(inYibo, mSynListener);
         }
         else if(Meiyuan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入美院范围",Toast.LENGTH_SHORT).show();
+            mTts.startSpeaking(inZhuanwan, mSynListener);
         }
+    }
+
+    private void setIatParam(String filename) {
+        // 清空参数
+        mIatD.setParameter(SpeechConstant.PARAMS, null);
+        // 设置听写引擎
+        mIatD.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_CLOUD);
+        // 设置返回结果格式
+        mIatD.setParameter(SpeechConstant.RESULT_TYPE, "json");
+        // 设置语言
+        mIatD.setParameter(SpeechConstant.LANGUAGE, "zh_cn");
+        // 设置语言区域
+        mIatD.setParameter(SpeechConstant.ACCENT, "mandarin");
+        // 设置语音前端点:静音超时时间，即用户多长时间不说话则当做超时处理vixy
+        mIatD.setParameter(SpeechConstant.VAD_BOS, "4000");
+        // 设置语音后端点:后端点静音检测时间，即用户停止说话多长时间内即认为不再输入， 自动停止录音
+        mIatD.setParameter(SpeechConstant.VAD_EOS, "2000");
+        // 设置标点符号,设置为"0"返回结果无标点,设置为"1"返回结果有标点
+        mIatD.setParameter(SpeechConstant.ASR_PTT, "1");
+        // 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限
+        // 注：AUDIO_FORMAT参数语记需要更新版本才能生效
+        mIatD.setParameter(SpeechConstant.AUDIO_FORMAT,"wav");
+        mIatD.setParameter(SpeechConstant.ASR_AUDIO_PATH, Environment.getExternalStorageDirectory() + "/MyApplication/" + filename + ".wav");
+        mTts.setParameter(SpeechConstant.PARAMS, null);
+
+        mTts.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_CLOUD); //设置云端
+        mTts.setParameter(SpeechConstant.VOICE_NAME, "");//设置发音人
+        mTts.setParameter(SpeechConstant.SPEED, "50");//设置语速
+        //设置合成音调
+        mTts.setParameter(SpeechConstant.PITCH, "50");
+        mTts.setParameter(SpeechConstant.VOLUME, "80");//设置音量，范围0~100
+        mTts.setParameter(SpeechConstant.STREAM_TYPE, "3");
+        // 设置播放合成音频打断音乐播放，默认为true
+        mTts.setParameter(SpeechConstant.KEY_REQUEST_FOCUS, "true");
+    }
+
+    public static String parseIatResult(String json) {
+        StringBuffer ret = new StringBuffer();
+        try {
+            JSONTokener tokener = new JSONTokener(json);
+            JSONObject joResult = new JSONObject(tokener);
+            JSONArray words = joResult.getJSONArray("ws");
+            for (int i = 0; i < words.length(); i++) {
+                // 转写结果词，默认使用第一个结果
+                JSONArray items = words.getJSONObject(i).getJSONArray("cw");
+                JSONObject obj = items.getJSONObject(0);
+                ret.append(obj.getString("w"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret.toString();
     }
 }
