@@ -98,24 +98,33 @@ implements View.OnClickListener,DialogInterface.OnClickListener
     private static LatLng southwest_Zhulou=new LatLng(40.0067200000,116.3373790000);
     //主楼前
     private Position Zhulouqian;
-    private static LatLng northeast_Zhulouqian=new LatLng(40.0069510000,116.3403070000);
-    private static LatLng southwest_Zhulouqian=new LatLng(40.0059530000,116.3383760000);
+    private static LatLng northeast_Zhulouqian=new LatLng(40.0069230000,116.3400110000);
+    private static LatLng southwest_Zhulouqian=new LatLng(40.0062190000,116.3383490000);
     //建馆报告厅
     private Position Jianguanbaogaoting;
-    private static LatLng northeast_Jianguanbaogaoting=new LatLng(40.0058320000,116.3411250000);
-    private static LatLng southwest_Jianguanbaogaoting=new LatLng(40.0053350000,116.3404740000);
+    private static LatLng northeast_Jianguanbaogaoting=new LatLng(40.0055870000,116.3410300000);
+    private static LatLng southwest_Jianguanbaogaoting=new LatLng(40.0052830000,116.3404110000);
     //建管
     private Position Jianguan;
-    private static LatLng northeast_Jianguan=new LatLng(40.0056420000,116.3402890000);
-    private static LatLng southwest_Jianguan=new LatLng(40.0049230000,116.3391130000);
+    private static LatLng northeast_Jianguan=new LatLng(40.0056800000,116.3396920000);
+    private static LatLng southwest_Jianguan=new LatLng(40.0049680000,116.3392110000);
     //艺术博物馆
     private Position Yibo;
-    private static LatLng northeast_Yibo=new LatLng(40.0079870000,116.3425220000);
-    private static LatLng southwest_Yibo=new LatLng(40.0069720000,116.3410040000);
+    private static LatLng northeast_Yibo=new LatLng(40.0078590000,116.3431010000);
+    private static LatLng southwest_Yibo=new LatLng(40.0070100000,116.3408150000);
     //美院
     private Position Meiyuan;
     private static LatLng northeast_Meiyuan=new LatLng(40.0063980000,116.3434200000);
     private static LatLng southwest_Meiyuan=new LatLng(40.0048060000,116.3415200000);
+    //建管报告厅转弯
+    private Position Zhuanwan;
+    private static LatLng northeast_Zhuanwan=new LatLng(40.0056760000,116.3410800000);
+    private static LatLng southwest_Zhuanwan=new LatLng(40.0055870000,116.3407480000);
+    //软件学院
+    private Position Ruanjian;
+    private static LatLng northeast_Ruanjian=new LatLng(40.0069300000,116.3410750000);
+    private static LatLng southwest_Ruanjian=new LatLng(40.0065850000,116.3403070000);
+
 
     //定义ViewPage滑动效果
     private View view1,view2;
@@ -589,6 +598,9 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         Jianguan=new Position(5,northeast_Jianguan,southwest_Jianguan);
         Yibo=new Position(6,northeast_Yibo,southwest_Yibo);
         Meiyuan=new Position(7,northeast_Meiyuan,southwest_Meiyuan);
+        Zhuanwan=new Position(8,northeast_Zhuanwan,southwest_Zhuanwan);
+        Ruanjian=new Position(9,northeast_Ruanjian,southwest_Ruanjian);
+
     }
     private void setSpeaking(){
         listening=false;
@@ -641,7 +653,17 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         else if(Meiyuan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入美院范围",Toast.LENGTH_SHORT).show();
+            //mTts.startSpeaking(inZhuanwan, mSynListener);
+        }
+        else if(Zhuanwan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "建管报告厅前转弯",Toast.LENGTH_SHORT).show();
             mTts.startSpeaking(inZhuanwan, mSynListener);
+        }
+        else if(Ruanjian.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
+            setSpeaking();
+            Toast.makeText(getApplicationContext(), "进入软件学院范围",Toast.LENGTH_SHORT).show();
+
         }
     }
 
