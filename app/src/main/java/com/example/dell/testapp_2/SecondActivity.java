@@ -65,6 +65,9 @@ implements View.OnClickListener,DialogInterface.OnClickListener
 {
     //坐标常数
     //紫荆公寓
+    private String nothing="小拜的语言中枢尚在进化之中，你的很多感情现在还无法传达给我，但我相信这道次元壁终将会被打破";
+    private String name="我是小拜10001号，小拜认真的说道";
+    private String hello="你好，最近有点无聊呢，能和我讲讲故事吗？";
     private String onRide = "第327位使用者，在你之前有253位用户留下了他们的故事，故事就像是旅程中的糖果，不知道在什么地方就" +
             "能捡到一颗，这样的未知性美丽而迷人，给熟悉的日常里添加不熟悉的色彩。你也可以在旅程中以语音的方式留下一段故事，" +
             "一起构筑这份献给陌生人的温柔。准备好开始你的旅程了吗";
@@ -79,7 +82,10 @@ implements View.OnClickListener,DialogInterface.OnClickListener
             "主楼，但每次看到天际微明时红旗鼓动着上升的那一刻，就觉得之前的一切付出都值得";
     private String inYibo = "这里是清华大学艺术博物馆，我和你说，这里可高级了，展出过达芬奇的手稿，伦勃朗和莫奈的画，简直就是清华大学艺术爱好者的天堂啊" +
             "我也好想进去逛逛";
+    private String inMeiyuan="这里就是我的根据地了，想上去看看吗？";
+    private String inZhulou="这里就是传说中的主楼了，据说在主楼的台阶上刻着一些校友的名字，细心的你们有发现吗？";
     private String onEnd = "看来这次行程就要结束了，没关系，我啥都懂点儿还能讲段子，你肯定会忍不住再来找我唠嗑的对不对？下次要找我玩哦，拜拜";
+    private String inRuanyuan="这里是传说中的软件学院，快看一看有没有发际线惊人的史诗级程序员路过！";
     private RecognizerDialog mIatD;
     private RecognizerDialogListener mDListener;
     private SpeechSynthesizer mTts;
@@ -236,6 +242,19 @@ implements View.OnClickListener,DialogInterface.OnClickListener
                     mIatD.hide();
                     if (result.indexOf("追剧") != -1){
                         mTts.startSpeaking(Huifu, mSynListener);
+                    }
+                    else{
+                        if(result.indexOf("好") != -1){
+                            mTts.startSpeaking(hello,mSynListener);
+                        }
+                        else{
+                            if(result.indexOf("名字") != -1 || result.indexOf("谁")!= -1){
+                                mTts.startSpeaking(name,mSynListener);
+                            }
+                            else{
+                                mTts.startSpeaking(nothing,mSynListener);
+                            }
+                        }
                     }
                 }
                 else {
@@ -426,6 +445,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
             handler.removeCallbacks(runnable);
             ((MyApplication)getApplicationContext()).addRidingTime(timecounter);
             ((MyApplication)getApplicationContext()).addRidingCount();
+            mTts.startSpeaking(onEnd,mSynListener);
             new AlertDialog.Builder(this).setMessage("本次骑行时间为："+getStringTime(timecounter))
                     .setTitle("骑行结束：").setPositiveButton("返回",this)
                     .show();
@@ -629,6 +649,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         else if(Zhulou.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入主楼范围",Toast.LENGTH_SHORT).show();
+            mTts.startSpeaking(inZhulou,mSynListener);
         }
         else if(Zhulouqian.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
@@ -654,6 +675,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入美院范围",Toast.LENGTH_SHORT).show();
             //mTts.startSpeaking(inZhuanwan, mSynListener);
+            mTts.startSpeaking(inMeiyuan,mSynListener);
         }
         else if(Zhuanwan.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
@@ -663,7 +685,7 @@ implements View.OnClickListener,DialogInterface.OnClickListener
         else if(Ruanjian.isTrigger(new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude()))&&!speaking){
             setSpeaking();
             Toast.makeText(getApplicationContext(), "进入软件学院范围",Toast.LENGTH_SHORT).show();
-
+            mTts.startSpeaking(inRuanyuan,mSynListener);
         }
     }
 
